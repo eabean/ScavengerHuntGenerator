@@ -8,9 +8,10 @@ class Program
     {
         string filePath = @"C:\Users\Enid\Documents\Dev\ScavengerHuntDb.xlsx";
         GameDetailsRepository gameDetailsRepository = new GameDetailsRepository(filePath);
-        var questions = gameDetailsRepository.ParseQuestions();
-        var locations = gameDetailsRepository.ParseLocations();
+        var game = new Game(gameDetailsRepository);
+        game.GenerateGame();
 
+        Console.WriteLine("Generated game");
        
 
     }

@@ -12,6 +12,12 @@ namespace ScavengerHuntGenerator
         public string locId;
         public string decodedDescription;
         public string clueDescription;
+
+        public Location()
+        {
+            
+        }
+
     }
 
     public class Answer
@@ -26,7 +32,7 @@ namespace ScavengerHuntGenerator
         public int qId;
         public string qText;
         public List<Answer> qAnswers;
-        public Dictionary<Answer, Location> answersLocationMapping;
+        public Dictionary<string, string> answersLocationMapping = new Dictionary<string, string>();
 
         public Question()
         {
@@ -39,13 +45,6 @@ namespace ScavengerHuntGenerator
             this.qText = text;
             this.qAnswers = answers;
         }
-
-        public void MapAnswersToLocations(Question question, List<Location> locations, Location correctLocation)
-        {
-            return;
-
-        }
-
     }
 
     public class Clue
@@ -57,15 +56,65 @@ namespace ScavengerHuntGenerator
 
     public class Game
     {
-        public List<Clue> clueList;
-        public const int MAX_CLUES = 10;
+        public List<Clue> clueList = new List<Clue>();
+        public List<Location> selectedLocations;
+        public List<Question> selectedQuestions;
 
-        public Game() { }
+        private GameDetailsRepository _detailsRepository;
+        public const int MAX_CLUES = 5;
 
+        public Game(GameDetailsRepository detailsRepository)
+        {
+            _detailsRepository = detailsRepository;
+        }
 
         public void GenerateGame()
         {
-            clueList = new List<Clue>();
+            var allLocations = _detailsRepository.ParseLocations();
+            var allQuestions = _detailsRepository.ParseQuestions();
+            selectedLocations = RandomizeList(allLocations, MAX_CLUES);
+            selectedQuestions = RandomizeList(allQuestions, MAX_CLUES);
+            MapAnswersToLocations(selectedLocations, selectedQuestions);
+            for(int i = 0; i < MAX_CLUES-1; i++)
+            {
+                var c = new Clue();
+                c.location = selectedLocations[i];
+                c.question = selectedQuestions[i];
+                clueList.Add(c);
+                Console.WriteLine($"Clue {i}: Location: {c.location.locId.ToString()}, {c.location.decodedDescription.ToString()}" +
+                    $" Question:  {c.question.qId}, {c.question.qText.ToString()}, {c.question.answersLocationMapping.ToString()}");
+            }
+
+        }
+
+        public async void MapAnswersToLocations(List<Location> locations, List<Question> questions)
+        {
+            for(int i = 0;i < questions.Count-1;i++)
+            {
+                var qAnswers = questions[i].qAnswers;
+                foreach(var answer in qAnswers)
+                {
+                    var questionMapping = questions[i].answersLocationMapping;
+                    var correctLocation = locations[i].clueDescription;
+                    if (answer.isCorrect) 
+                    {
+                       questionMapping.Add(answer.anText, correctLocation);
+                    } else
+                    {
+                        questionMapping.Add(answer.anText, "fake location");
+                    }
+                }
+
+            }
+        }
+
+        public List<T> RandomizeList<T>(List<T> originalList, int length)
+        {
+            var rand = new Random();
+            var shuffledList = originalList.OrderBy(x => rand.Next()).ToList();
+            List<T> selectedItems = shuffledList.Take(length).ToList();
+
+            return selectedItems;
         }
     }
 }
