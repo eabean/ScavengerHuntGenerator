@@ -3,7 +3,6 @@ using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using Document = DocumentFormat.OpenXml.Wordprocessing.Document;
-using Word = Microsoft.Office.Interop.Word;
 
 
 namespace ScavengerHuntGenerator
@@ -11,50 +10,73 @@ namespace ScavengerHuntGenerator
     public class GameDetailsExporter
     {
 
-        private string _exportPath;
-        public GameDetailsExporter(string exportPath)
+        private string _exportFolder;
+        private string _resourcePath;
+        public GameDetailsExporter(string exportFolder, string resourcePath)
         {
-            _exportPath = exportPath;
+            _exportFolder = exportFolder;
+            _resourcePath = resourcePath;
+
         }
 
-        public void CreateWordDocument()
+        public void ExportGameLegend()
         {
-            using (WordprocessingDocument wordDoc = WordprocessingDocument.Create(_exportPath, WordprocessingDocumentType.Document))
+
+        }
+
+        public void ExportClues()
+        {
+
+          
+            var outputFolderPath = _exportFolder + "Games";
+            var outputFileName = "GameA.docx";
+
+            var outputFilePath = Path.Combine(outputFolderPath, outputFileName);
+
+            Directory.CreateDirectory(outputFolderPath);
+
+            File.Copy(_resourcePath, outputFilePath, true);
+
+
+            using (WordprocessingDocument doc = WordprocessingDocument.Open(outputFilePath, true))
             {
-                // Add a new main document part
-                MainDocumentPart mainPart = wordDoc.AddMainDocumentPart();
-                mainPart.Document = new Document();
+                MainDocumentPart mainPart = doc.MainDocumentPart;
 
-                // Add a body to the document
-                Body body = mainPart.Document.AppendChild(new Body());
-
-                // Create a table with 3 rows and 3 columns
-                Table table = new Table();
-                for (int i = 0; i < 3; i++)
+                foreach (Table table in mainPart.Document.Body.Descendants<Table>())
                 {
-                    TableRow row = new TableRow();
-                    for (int j = 0; j < 3; j++)
+                    foreach (TableRow row in table.Elements<TableRow>())
                     {
-                        TableCell cell = new TableCell();
-                        cell.Append(new TableCellProperties(new TableCellWidth() { Type = TableWidthUnitValues.Auto }));
+                        foreach (TableCell cell in row.Elements<TableCell>())
+                        {
+                            cell.RemoveAllChildren();
 
-                        // Add some text inside each cell
-                        Paragraph paragraph = new Paragraph(new Run(new Text($"Cell {i + 1}-{j + 1}")));
-                        cell.Append(paragraph);
+                            Paragraph paragraph = new Paragraph();
+                            Run run = new Run(new Text("How many holes are in a straw?"));
+                            run.Append(new Break()); // Add a line break
+                            run.Append(new Break()); // Add a line break
+                            run.Append(new Text("First answer"));
+                            run.Append(new Text("Second answer"));
+                            run.Append(new Text("Third answer"));
+                            run.Append(new Text("Fourth answer"));
 
-                        row.Append(cell);
+
+                            // Center align the text
+                            ParagraphProperties paragraphProperties = new ParagraphProperties();
+                            Justification justification = new Justification() { Val = JustificationValues.Center };
+                            paragraphProperties.Append(justification);
+                            paragraph.Append(paragraphProperties);
+
+                            paragraph.Append(run);
+                            cell.Append(paragraph);
+                        }
                     }
-                    table.Append(row);
                 }
-
-                // Set the width of the table to take up the majority of the page
-                TableWidth tableWidth = new TableWidth() { Width = "5000", Type = TableWidthUnitValues.Pct };
-                table.AppendChild(new TableProperties(tableWidth));
-
-                // Add the table to the document body
-                body.Append(table);
+                mainPart.Document.Save();
             }
+
+            Console.WriteLine("Word document processed successfully.");
+        }
+ 
 
         }
     }
-}
