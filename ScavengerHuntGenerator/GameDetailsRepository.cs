@@ -77,9 +77,10 @@ namespace ScavengerHuntGenerator
         {
 
             var locations = new List<Location>();
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
             using (var excelPackage = new ExcelPackage(new FileInfo(_pathToExcel)))
             {
-                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
                 var worksheet = excelPackage.Workbook.Worksheets[1];
 
                 int rowCount = worksheet.Dimension.Rows;
