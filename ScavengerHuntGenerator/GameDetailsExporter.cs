@@ -48,6 +48,17 @@ namespace ScavengerHuntGenerator
                         {
                             cell.RemoveAllChildren();
 
+                            int marginInTwentiethsOfPoint = (int)(1.25 * 1440); 
+
+                            TableCellMargin tableCellMargin = new TableCellMargin();
+
+                            tableCellMargin.LeftMargin = new LeftMargin() { Width = marginInTwentiethsOfPoint.ToString() };
+                            tableCellMargin.RightMargin = new RightMargin() { Width = marginInTwentiethsOfPoint.ToString() };
+
+                            TableCellProperties cellProperties = new TableCellProperties(tableCellMargin);
+                            cell.Append(cellProperties);
+
+
                             Paragraph paragraph = new Paragraph();
                             Run question = new Run(new Text("How many holes are in a straw?"));
                             question.Append(new Break());
@@ -60,21 +71,28 @@ namespace ScavengerHuntGenerator
                             answers.Append(new Break());
                             answers.Append(new Text("a4"));
 
+                            RunProperties runProperties = new RunProperties();
+                            FontSize fontSize = new FontSize() { Val = "24" };
+                            runProperties.Append(fontSize);       
+                            RunProperties runProperties2 = new RunProperties();
+                            FontSize fontSize2 = new FontSize() { Val = "24" };
+                            runProperties2.Append(fontSize2);
+
+                            question.RunProperties = runProperties;
+                            answers.RunProperties = runProperties2;
+
+                            paragraph.Append(new Break());
+                            paragraph.Append(new Break());
+                            paragraph.Append(new Break());
+                            paragraph.Append(new Break());
+                            paragraph.Append(new Break());
+                            paragraph.Append(new Break());
                             paragraph.Append(question,answers);
-
-                            //Run a1 = new Run(new Text("First answer"));
-                            //a1.Append(new Break());
-                            //Run a2 = new Run(new Text("Second answer"));
-                            //a2.Append(new Break());
-                            //Run a3 = new Run(new Text("Third answer"));
-                            //a3.Append(new Break());
-                            //Run a4 = new Run(new Text("Fourth answer"));
-
-                            //paragraph.Append(question,a1,a2,a3,a4);
+                           
 
                             // Center align the paragraph within the cell
                             ParagraphProperties paragraphProperties = new ParagraphProperties();
-                            Justification justification = new Justification() { Val = JustificationValues.Center };
+                            Justification justification = new Justification() { Val = JustificationValues.Left };
                             paragraphProperties.Append(justification);
                             paragraph.Append(paragraphProperties);
 

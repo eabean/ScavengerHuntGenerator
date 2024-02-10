@@ -8,12 +8,12 @@ class Program
     {
         var executableDirectory = AppDomain.CurrentDomain.BaseDirectory;
         var projectDirectory = Directory.GetParent(executableDirectory).FullName;
+
         var resourcesFolderName = "Resources";
         var resourcesFolderPath = Path.Combine(projectDirectory, resourcesFolderName);
         var dbPath = resourcesFolderPath + @"\ScavengerHuntDb.xlsx";
 
         var outputFolderName = "Output";
-
         string outputFolder = Path.Combine(projectDirectory, outputFolderName);
         string resourcePath = resourcesFolderPath + @"\Clues2x2.docx";
 
