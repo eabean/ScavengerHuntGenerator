@@ -62,7 +62,11 @@ namespace ScavengerHuntGenerator
         public List<Question> selectedQuestions;
 
         private GameDetailsRepository _detailsRepository;
-        public const int MAX_CLUES = 5;
+        public const int NUM_OF_CLUES= 5;
+        public const int NUM_OF_GAMES = 3;
+        public const int MAX_GAMES = 26;
+        public const int MAX_CLUES = 12;
+
 
         public Game(string gameId, GameDetailsRepository detailsRepository)
         {
@@ -74,10 +78,10 @@ namespace ScavengerHuntGenerator
         {
             var allLocations = _detailsRepository.ParseLocations();
             var allQuestions = _detailsRepository.ParseQuestions();
-            selectedLocations = RandomizeList(allLocations, MAX_CLUES);
-            selectedQuestions = RandomizeList(allQuestions, MAX_CLUES);
+            selectedLocations = RandomizeList(allLocations, NUM_OF_CLUES);
+            selectedQuestions = RandomizeList(allQuestions, NUM_OF_CLUES);
             MapAnswersToLocations(selectedLocations, selectedQuestions);
-            for(int i = 0; i < MAX_CLUES-1; i++)
+            for(int i = 0; i < NUM_OF_CLUES - 1; i++)
             {
                 var c = new Clue();
                 c.location = selectedLocations[i];
