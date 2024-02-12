@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing.Printing;
 using DocumentFormat.OpenXml;
+using DocumentFormat.OpenXml.Office2016.Drawing.Command;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using OfficeOpenXml;
@@ -43,20 +44,19 @@ namespace ScavengerHuntGenerator
 
                 for (int i = 2, g= 0; i < _games.Count+2; i++, g++)
                 {
-                        worksheet.Cells[i, 1].Value = _games[g].gameId;
+                    worksheet.Cells[i, 1].Value = _games[g].gameId;
                 }
 
-
-                //int startRow = 2;
-                //for(int row=startRow; row <= _games.Count+startRow; row++)
-                //{
-                //    for (int col = 1; row <= _games.Count + startRow; row++)
-                //    {
-
-                //    }
-                //}
-                worksheet.Cells["B2"].Value = "Hello";
-                worksheet.Cells["C2"].Value = "World!";
+                int startRow = 2;
+                for (int row = startRow; row < _games.Count + startRow; row++)
+                {
+                    var currentGame = _games[row-2];
+                    for (int col = 2; col < Game.NUM_OF_CLUES + startRow; col++)
+                    {
+                        var correctLocation = currentGame.selectedLocations[col - 2];
+                        worksheet.Cells[row, col].Value = $"{correctLocation.locId}"; 
+                    }
+                }
 
                 package.SaveAs(new FileInfo(outputFilePath));
             }
@@ -104,7 +104,7 @@ namespace ScavengerHuntGenerator
 
 
                         Paragraph paragraph = new Paragraph();
-                        Run questionRun = new Run(new Text($"{i+1}. {question.qText}"));
+                        Run questionRun = new Run(new Text($"{game.gameId}{i+1}. {question.qText}"));
                         questionRun.Append(new Break());
                         questionRun.Append(new Break());
                         Run answers = new Run();
