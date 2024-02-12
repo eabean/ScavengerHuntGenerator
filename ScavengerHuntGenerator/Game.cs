@@ -81,7 +81,7 @@ namespace ScavengerHuntGenerator
             selectedLocations = RandomizeList(allLocations, NUM_OF_CLUES);
             selectedQuestions = RandomizeList(allQuestions, NUM_OF_CLUES);
             MapAnswersToLocations(selectedLocations, selectedQuestions);
-            for(int i = 0; i < NUM_OF_CLUES - 1; i++)
+            for(int i = 0; i < NUM_OF_CLUES-1; i++)
             {
                 var c = new Clue();
                 c.location = selectedLocations[i];
@@ -95,7 +95,7 @@ namespace ScavengerHuntGenerator
 
         public async void MapAnswersToLocations(List<Location> locations, List<Question> questions)
         {
-            for(int i = 0;i < questions.Count-1;i++)
+            for(int i = 0;i < questions.Count;i++)
             {
                 var qAnswers = questions[i].qAnswers;
                 foreach(var answer in qAnswers)

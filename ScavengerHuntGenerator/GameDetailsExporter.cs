@@ -5,6 +5,10 @@ using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using OfficeOpenXml;
 using FontSize = DocumentFormat.OpenXml.Wordprocessing.FontSize;
+using Path = System.IO.Path;
+using Table = DocumentFormat.OpenXml.Wordprocessing.Table;
+using TableCell = DocumentFormat.OpenXml.Wordprocessing.TableCell;
+using TableCellProperties = DocumentFormat.OpenXml.Wordprocessing.TableCellProperties;
 
 namespace ScavengerHuntGenerator
 {
@@ -73,75 +77,80 @@ namespace ScavengerHuntGenerator
                 using (WordprocessingDocument doc = WordprocessingDocument.Open(outputFilePath, true))
                 {
                     MainDocumentPart mainPart = doc.MainDocumentPart;
-                    var body = mainPart.Document.Body;
+                    Table table = mainPart.Document.Body.Descendants<Table>().FirstOrDefault();
+                    var tableCells = table.Descendants<TableCell>().ToArray();
 
-                    foreach (Table table in body.Descendants<Table>())
+                    if (tableCells.Length < Game.NUM_OF_CLUES) throw new Exception("Not enough table cells to print out all clues.");
+
+                    var questions = game.selectedQuestions;
+
+                    for (int i=0; i< questions.Count; i++) 
                     {
-                        foreach (TableRow row in table.Elements<TableRow>())
+
+                        var question = questions[i];
+                        var cell = tableCells[i];
+                        cell.RemoveAllChildren();
+
+                        int leftmarginInTwentiethsOfPoint = (int)(0.5 * 1440);
+                        int rightmarginInTwentiethsOfPoint = (int)(0.5 * 1440);
+
+                        TableCellMargin tableCellMargin = new TableCellMargin();
+
+                        tableCellMargin.LeftMargin = new LeftMargin() { Width = leftmarginInTwentiethsOfPoint.ToString() };
+                        tableCellMargin.RightMargin = new RightMargin() { Width = rightmarginInTwentiethsOfPoint.ToString() };
+
+                        TableCellProperties cellProperties = new TableCellProperties(tableCellMargin);
+                        cell.Append(cellProperties);
+
+
+                        Paragraph paragraph = new Paragraph();
+                        Run questionRun = new Run(new Text($"{question.qText}"));
+                        questionRun.Append(new Break());
+                        questionRun.Append(new Break());
+                        Run answers = new Run();
+
+                        foreach (var alm in question.answersLocationMapping)
                         {
-                            foreach (TableCell cell in row.Elements<TableCell>())
-                            {
-                                cell.RemoveAllChildren();
-
-                                int marginInTwentiethsOfPoint = (int)(1.25 * 1440);
-
-                                TableCellMargin tableCellMargin = new TableCellMargin();
-
-                                tableCellMargin.LeftMargin = new LeftMargin() { Width = marginInTwentiethsOfPoint.ToString() };
-                                tableCellMargin.RightMargin = new RightMargin() { Width = marginInTwentiethsOfPoint.ToString() };
-
-                                TableCellProperties cellProperties = new TableCellProperties(tableCellMargin);
-                                cell.Append(cellProperties);
-
-
-                                Paragraph paragraph = new Paragraph();
-                                Run question = new Run(new Text("How many holes are in a straw?"));
-                                question.Append(new Break());
-                                question.Append(new Break());
-                                Run answers = new Run(new Text("a1"));
-                                answers.Append(new Break());
-                                answers.Append(new Text("a2"));
-                                answers.Append(new Break());
-                                answers.Append(new Text("a3"));
-                                answers.Append(new Break());
-                                answers.Append(new Text("a4"));
-
-                                RunProperties runProperties = new RunProperties();
-                                FontSize fontSize = new FontSize() { Val = "24" };
-                                runProperties.Append(fontSize);
-                                RunProperties runProperties2 = new RunProperties();
-                                FontSize fontSize2 = new FontSize() { Val = "24" };
-                                runProperties2.Append(fontSize2);
-
-                                question.RunProperties = runProperties;
-                                answers.RunProperties = runProperties2;
-
-                                paragraph.Append(new Break());
-                                paragraph.Append(new Break());
-                                paragraph.Append(new Break());
-                                paragraph.Append(new Break());
-                                paragraph.Append(new Break());
-                                paragraph.Append(new Break());
-                                paragraph.Append(question, answers);
-
-
-                                // Center align the paragraph within the cell
-                                ParagraphProperties paragraphProperties = new ParagraphProperties();
-                                Justification justification = new Justification() { Val = JustificationValues.Left };
-                                paragraphProperties.Append(justification);
-                                paragraph.Append(paragraphProperties);
-
-                                cell.Append(paragraph);
-                            }
+                            answers.Append(new Text($"{alm.Key} → {alm.Value}"));
+                            answers.Append(new Break());
                         }
-                    }
-                    mainPart.Document.Save();
-                }
-            }
+                        
 
-            Console.WriteLine("Games clues processed successfully.");
+                        RunProperties runProperties = new RunProperties();
+                        FontSize fontSize = new FontSize() { Val = "24" };
+                        runProperties.Append(fontSize);
+                        RunProperties runProperties2 = new RunProperties();
+                        FontSize fontSize2 = new FontSize() { Val = "24" };
+                        runProperties2.Append(fontSize2);
+
+                        questionRun.RunProperties = runProperties;
+                        answers.RunProperties = runProperties2;
+
+                        paragraph.Append(new Break());
+                        paragraph.Append(new Break());
+                        paragraph.Append(new Break());
+                        paragraph.Append(new Break());
+                        paragraph.Append(questionRun, answers);
+
+
+                        // Center align the paragraph within the cell
+                        ParagraphProperties paragraphProperties = new ParagraphProperties();
+                        Justification justification = new Justification() { Val = JustificationValues.Left };
+                        paragraphProperties.Append(justification);
+                        paragraph.Append(paragraphProperties);
+
+                        cell.Append(paragraph);
+
+                     }
+                    mainPart.Document.Save();
+                    Console.WriteLine("Games clues processed successfully.");
+                }
+
+             }
+
         }
- 
      }
 
+            
 }
+
