@@ -62,7 +62,6 @@ namespace ScavengerHuntGenerator
 
         public void ExportClues()
         {
-
             foreach (var game in _games)
             {
                 var outputFileName = $"Game{game.gameId}.docx";

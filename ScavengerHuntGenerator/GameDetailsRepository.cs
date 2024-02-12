@@ -105,5 +105,37 @@ namespace ScavengerHuntGenerator
             return locations;
         }
 
+        public List<Location> ParseFakeLocations()
+        {
+
+            var fakeLocations = new List<Location>();
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+            using (var excelPackage = new ExcelPackage(new FileInfo(_pathToExcel)))
+            {
+
+                var worksheet = excelPackage.Workbook.Worksheets[2];
+
+                int rowCount = worksheet.Dimension.Rows;
+                for (int row = 2; row <= rowCount; row++)
+                {
+
+                    var loc = new Location();
+
+                    loc.locId = worksheet.Cells[row, 1].Value?.ToString();
+                    loc.decodedDescription = "";
+                    loc.clueDescription = worksheet.Cells[row, 2].Value?.ToString();
+
+                    fakeLocations.Add(loc);
+                }
+            }
+
+            foreach (var loc in fakeLocations)
+            {
+                Console.WriteLine($"Id: {loc.locId}, clueDescription: {loc.clueDescription}");
+            }
+
+            return fakeLocations;
+        }
+
     }
 }

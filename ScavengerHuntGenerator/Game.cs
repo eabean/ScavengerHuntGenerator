@@ -77,9 +77,10 @@ namespace ScavengerHuntGenerator
         {
             var allLocations = _detailsRepository.ParseLocations();
             var allQuestions = _detailsRepository.ParseQuestions();
+            var allFakeLocations = _detailsRepository.ParseFakeLocations();
             selectedLocations = RandomizeList(allLocations, NUM_OF_CLUES);
             selectedQuestions = RandomizeList(allQuestions, NUM_OF_CLUES);
-            MapAnswersToLocations(selectedLocations, selectedQuestions);
+            MapAnswersToLocations(selectedLocations, selectedQuestions, allFakeLocations);
             for(int i = 0; i < NUM_OF_CLUES-1; i++)
             {
                 var c = new Clue();
@@ -92,12 +93,14 @@ namespace ScavengerHuntGenerator
 
         }
 
-        public async void MapAnswersToLocations(List<Location> locations, List<Question> questions)
+        public async void MapAnswersToLocations(List<Location> locations, List<Question> questions, List<Location> fakeLocations)
         {
             for(int i = 0;i < questions.Count;i++)
             {
                 var qAnswers = questions[i].qAnswers;
-                foreach(var answer in qAnswers)
+                var fakeLocationAnswers = GetFakeLocationSet(fakeLocations, 3);
+                var fakeLocationIndex = 0;
+                foreach (var answer in qAnswers)
                 {
                     var questionMapping = questions[i].answersLocationMapping;
                     var correctLocation = locations[i].clueDescription;
@@ -106,11 +109,22 @@ namespace ScavengerHuntGenerator
                        questionMapping.Add(answer.anText, correctLocation);
                     } else
                     {
-                        questionMapping.Add(answer.anText, "fake location");
+                        questionMapping.Add(answer.anText, fakeLocationAnswers[fakeLocationIndex].clueDescription);
+                        fakeLocationIndex++;
                     }
                 }
 
             }
+        }
+
+        public List<Location> GetFakeLocationSet(List<Location> originalList, int length)
+        {
+            var randomFakeLocations = RandomizeList(originalList, 3);
+            while (randomFakeLocations.Select(l => l.locId).Distinct().Count() != randomFakeLocations.Count)
+            {
+                randomFakeLocations = RandomizeList(originalList, 3);
+            }
+            return randomFakeLocations;
         }
 
         public List<T> RandomizeList<T>(List<T> originalList, int length)
