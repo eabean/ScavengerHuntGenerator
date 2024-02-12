@@ -24,8 +24,8 @@ namespace ScavengerHuntGenerator
                 ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
                 var worksheet = excelPackage.Workbook.Worksheets[0];
 
-                int rowCount = worksheet.Dimension.Rows-1;
-                for (int row = 2; row <= rowCount+1; row++)
+                int rowCount = worksheet.Dimension.Rows;
+                for (int row = 2; row <= rowCount; row++)
                 {
                     var q = new Question();
 
@@ -83,8 +83,8 @@ namespace ScavengerHuntGenerator
 
                 var worksheet = excelPackage.Workbook.Worksheets[1];
 
-                int rowCount = worksheet.Dimension.Rows-1;
-                for (int row = 2; row <= rowCount+1; row++)
+                int rowCount = worksheet.Dimension.Rows;
+                for (int row = 2; row <= rowCount; row++)
                 {
 
                     var loc = new Location();

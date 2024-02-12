@@ -104,14 +104,16 @@ namespace ScavengerHuntGenerator
 
 
                         Paragraph paragraph = new Paragraph();
-                        Run questionRun = new Run(new Text($"{question.qText}"));
+                        Run questionRun = new Run(new Text($"{i+1}. {question.qText}"));
                         questionRun.Append(new Break());
                         questionRun.Append(new Break());
                         Run answers = new Run();
 
                         foreach (var alm in question.answersLocationMapping)
                         {
-                            answers.Append(new Text($"{alm.Key} → {alm.Value}"));
+                            answers.Append(new Text($"{alm.Key}"));
+                            answers.Append(new Break());
+                            answers.Append(new Text($"→ {alm.Value}"));
                             answers.Append(new Break());
                         }
                         
@@ -129,11 +131,9 @@ namespace ScavengerHuntGenerator
                         paragraph.Append(new Break());
                         paragraph.Append(new Break());
                         paragraph.Append(new Break());
-                        paragraph.Append(new Break());
                         paragraph.Append(questionRun, answers);
 
 
-                        // Center align the paragraph within the cell
                         ParagraphProperties paragraphProperties = new ParagraphProperties();
                         Justification justification = new Justification() { Val = JustificationValues.Left };
                         paragraphProperties.Append(justification);
