@@ -4,6 +4,8 @@ using System;
 
 class Program
 {
+
+    public List<string> gameIds = Enumerable.Range('A', 26).Select(x => ((char)x).ToString()).ToList();
     static void Main(string[] args)
     {
         var executableDirectory = AppDomain.CurrentDomain.BaseDirectory;
@@ -18,10 +20,12 @@ class Program
         string resourcePath = resourcesFolderPath + @"\Clues2x2.docx";
 
         GameDetailsRepository gameDetailsRepository = new GameDetailsRepository(dbPath);
-        var game = new Game(gameDetailsRepository);
+        var game = new Game("A", gameDetailsRepository);
         game.GenerateGame();
-        GameDetailsExporter exporter = new GameDetailsExporter(outputFolder, resourcePath);
-        exporter.ExportClues();
+        List<Game> gamesGenerated = new List<Game> { game };
+        GameDetailsExporter exporter = new GameDetailsExporter(gamesGenerated, outputFolder, resourcePath);
+        exporter.ExportClues(game);
+        exporter.ExportGameLegend();
         Console.WriteLine("Generated game");
        
 

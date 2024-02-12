@@ -56,6 +56,7 @@ namespace ScavengerHuntGenerator
 
     public class Game
     {
+        public string gameId;
         public List<Clue> clueList = new List<Clue>();
         public List<Location> selectedLocations;
         public List<Question> selectedQuestions;
@@ -63,8 +64,9 @@ namespace ScavengerHuntGenerator
         private GameDetailsRepository _detailsRepository;
         public const int MAX_CLUES = 5;
 
-        public Game(GameDetailsRepository detailsRepository)
+        public Game(string gameId, GameDetailsRepository detailsRepository)
         {
+            this.gameId = gameId;
             _detailsRepository = detailsRepository;
         }
 

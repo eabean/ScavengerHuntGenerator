@@ -3,31 +3,67 @@ using System.Drawing.Printing;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
-using Document = DocumentFormat.OpenXml.Wordprocessing.Document;
-
+using OfficeOpenXml;
+using FontSize = DocumentFormat.OpenXml.Wordprocessing.FontSize;
 
 namespace ScavengerHuntGenerator
 {
     public class GameDetailsExporter
     {
-
+        private List<Game> _games;
         private string _exportFolder;
         private string _resourcePath;
-        public GameDetailsExporter(string exportFolder, string resourcePath)
+        public GameDetailsExporter(List<Game> games, string exportFolder, string resourcePath)
         {
+            _games = games;
             _exportFolder = exportFolder;
-            _resourcePath = resourcePath;
-
+            _resourcePath = resourcePath;   
         }
+
+    
 
         public void ExportGameLegend()
         {
+            var outputFileName = $"GameLegend.xlsx";
+            var outputFilePath = Path.Combine(_exportFolder, outputFileName);
+            Directory.CreateDirectory(_exportFolder);
 
+            using (ExcelPackage package = new ExcelPackage())
+            {
+                ExcelWorksheet worksheet = package.Workbook.Worksheets.Add("Legend");
+
+                for(int i = 2;i < Game.MAX_CLUES+2; i++)
+                {
+                    worksheet.Cells[1, i].Value = $"L{i-1}";                  
+                }
+
+                for (int i = 2, g= 0; i < _games.Count+1; i++, g++)
+                {
+                        worksheet.Cells[i, 1].Value = _games[g].gameId;
+                }
+
+
+                //int startRow = 2;
+                //for(int row=startRow; row <= _games.Count+startRow; row++)
+                //{
+                //    for (int col = 1; row <= _games.Count + startRow; row++)
+                //    {
+
+                //    }
+                //}
+                worksheet.Cells["B2"].Value = "Hello";
+                worksheet.Cells["C2"].Value = "World!";
+
+                package.SaveAs(new FileInfo(outputFilePath));
+            }
+
+            Console.WriteLine("Excel file exported successfully.");
         }
+     
 
-        public void ExportClues()
+        public void ExportClues(Game game)
         {
-            var outputFileName = "GameA.docx";
+            var outputFileName = $"Game{game.gameId}.docx";
 
             var outputFilePath = Path.Combine(_exportFolder, outputFileName);
 
@@ -108,4 +144,6 @@ namespace ScavengerHuntGenerator
  
 
         }
+
+
     }
