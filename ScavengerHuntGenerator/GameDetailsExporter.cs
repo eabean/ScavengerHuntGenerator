@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Drawing.Printing;
-using DocumentFormat.OpenXml;
-using DocumentFormat.OpenXml.Office2016.Drawing.Command;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using OfficeOpenXml;
@@ -24,8 +21,6 @@ namespace ScavengerHuntGenerator
             _exportFolder = exportFolder;
             _resourcePath = resourcePath;   
         }
-
-    
 
         public void ExportGameLegend()
         {

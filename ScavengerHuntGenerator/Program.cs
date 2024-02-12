@@ -6,8 +6,6 @@ using System;
 class Program
 {
 
-    
-
     static void Main(string[] args)
     {
         var executableDirectory = AppDomain.CurrentDomain.BaseDirectory;

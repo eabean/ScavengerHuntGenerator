@@ -22,7 +22,6 @@ namespace ScavengerHuntGenerator
 
     public class Answer
     {
-        //public int anId;
         public string anText;
         public bool isCorrect;
     }
