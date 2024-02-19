@@ -61,8 +61,8 @@ namespace ScavengerHuntGenerator
         public List<Question> selectedQuestions;
 
         private GameDetailsRepository _detailsRepository;
-        public const int NUM_OF_CLUES= 5;
-        public const int NUM_OF_GAMES = 3;
+        public const int NUM_OF_CLUES= 10;
+        public const int NUM_OF_GAMES = 8;
         public const int NUM_OF_ANS = 4;
         public const int MAX_GAMES = 26;
         public const int MAX_CLUES = 12;

@@ -31,25 +31,31 @@ namespace ScavengerHuntGenerator
             using (ExcelPackage package = new ExcelPackage())
             {
                 ExcelWorksheet worksheet = package.Workbook.Worksheets.Add("Legend");
-
-                for(int i = 2;i < Game.NUM_OF_CLUES +2; i++)
-                {
-                    worksheet.Cells[1, i].Value = $"L{i-1}";                  
-                }
-
-                for (int i = 2, g= 0; i < _games.Count+2; i++, g++)
-                {
-                    worksheet.Cells[i, 1].Value = _games[g].gameId;
-                }
-
                 int startRow = 2;
-                for (int row = startRow; row < _games.Count + startRow; row++)
+                // Clues
+                for (int i = startRow;i <= Game.NUM_OF_CLUES +startRow; i++)
                 {
-                    var currentGame = _games[row-2];
-                    for (int col = 2; col < Game.NUM_OF_CLUES + startRow; col++)
+                    worksheet.Cells[1, i].Value = $"C{i-1}";                  
+                }
+
+                // Games
+
+                for (int i = startRow, g= 0; i < (_games.Count)*2; i += 2, g++)
+                {
+                    worksheet.Cells[i, 1].Value = _games[g].gameId + " Loc"; // Clue Locations
+                    worksheet.Cells[i+1, 1].Value = _games[g].gameId +  " Ans"; // Clue Answer
+                }
+
+
+                for (int row = startRow, gIndex =0; row < (_games.Count) * 2; row +=2, gIndex++)
+                {
+                    var currentGame = _games[gIndex];
+                    for (int col = 2, g = 0; col < Game.NUM_OF_CLUES + startRow; col++, g++)
                     {
-                        var correctLocation = currentGame.selectedLocations[col - 2];
-                        worksheet.Cells[row, col].Value = $"{correctLocation.locId}"; 
+                        var correctLocation = currentGame.selectedLocations[g];
+                        var correctAnswer = ParseCorrectAnswer(currentGame.selectedQuestions, g);
+                        worksheet.Cells[row, col+1].Value = $"{correctLocation.locId}"; 
+                        worksheet.Cells[row+1, col].Value = $"{correctAnswer}"; 
                     }
                 }
 
@@ -57,6 +63,15 @@ namespace ScavengerHuntGenerator
             }
 
             Console.WriteLine("Excel file exported successfully.");
+        }
+
+        public string ParseCorrectAnswer(List<Question> gameQuestions, int index)
+        {
+            var currentQuestion = gameQuestions[index];
+            string correctLetter =  currentQuestion.qAnswers
+                .FirstOrDefault(a => a.isCorrect).anText[0].ToString();
+
+            return correctLetter;
         }
      
 
@@ -74,66 +89,109 @@ namespace ScavengerHuntGenerator
                     Table table = mainPart.Document.Body.Descendants<Table>().FirstOrDefault();
                     var tableCells = table.Descendants<TableCell>().ToArray();
 
-                    if (tableCells.Length < Game.NUM_OF_CLUES) throw new Exception("Not enough table cells to print out all clues.");
+                    if (tableCells.Length <= Game.NUM_OF_CLUES) throw new Exception("Not enough table cells to print out all clues and final instruction.");
 
                     var questions = game.selectedQuestions;
 
-                    for (int i=0; i< questions.Count; i++) 
+                    for (int i=0; i<= questions.Count; i++) 
                     {
-
-                        var question = questions[i];
-                        var cell = tableCells[i];
-                        cell.RemoveAllChildren();
-
-                        int leftmarginInTwentiethsOfPoint = (int)(0.5 * 1440);
-                        int rightmarginInTwentiethsOfPoint = (int)(0.5 * 1440);
-
-                        TableCellMargin tableCellMargin = new TableCellMargin();
-
-                        tableCellMargin.LeftMargin = new LeftMargin() { Width = leftmarginInTwentiethsOfPoint.ToString() };
-                        tableCellMargin.RightMargin = new RightMargin() { Width = rightmarginInTwentiethsOfPoint.ToString() };
-
-                        TableCellProperties cellProperties = new TableCellProperties(tableCellMargin);
-                        cell.Append(cellProperties);
-
-
-                        Paragraph paragraph = new Paragraph();
-                        Run questionRun = new Run(new Text($"{game.gameId}{i+1}. {question.qText}"));
-                        questionRun.Append(new Break());
-                        questionRun.Append(new Break());
-                        Run answers = new Run();
-
-                        foreach (var alm in question.answersLocationMapping)
+                        if(i < questions.Count)
                         {
-                            answers.Append(new Text($"{alm.Key}"));
-                            answers.Append(new Break());
-                            answers.Append(new Text($"→ {alm.Value}"));
-                            answers.Append(new Break());
+                            var question = questions[i];
+                            var cell = tableCells[i];
+                            cell.RemoveAllChildren();
+
+                            int leftmarginInTwentiethsOfPoint = (int)(0.5 * 1440);
+                            int rightmarginInTwentiethsOfPoint = (int)(0.5 * 1440);
+
+                            TableCellMargin tableCellMargin = new TableCellMargin();
+
+                            tableCellMargin.LeftMargin = new LeftMargin() { Width = leftmarginInTwentiethsOfPoint.ToString() };
+                            tableCellMargin.RightMargin = new RightMargin() { Width = rightmarginInTwentiethsOfPoint.ToString() };
+
+                            TableCellProperties cellProperties = new TableCellProperties(tableCellMargin);
+                            cell.Append(cellProperties);
+
+
+                            Paragraph paragraph = new Paragraph();
+                            Run questionRun = new Run(new Text($"{game.gameId}{i + 1}. {question.qText}"));
+                            questionRun.Append(new Break());
+                            questionRun.Append(new Break());
+                            Run answers = new Run();
+
+                            foreach (var alm in question.answersLocationMapping)
+                            {
+                                answers.Append(new Text($"{alm.Key}"));
+                                answers.Append(new Break());
+                                answers.Append(new Text($"→ {alm.Value}"));
+                                answers.Append(new Break());
+                            }
+
+
+                            RunProperties runProperties = new RunProperties();
+                            FontSize fontSize = new FontSize() { Val = "24" };
+                            runProperties.Append(fontSize);
+                            RunProperties runProperties2 = new RunProperties();
+                            FontSize fontSize2 = new FontSize() { Val = "24" };
+                            runProperties2.Append(fontSize2);
+
+                            questionRun.RunProperties = runProperties;
+                            answers.RunProperties = runProperties2;
+
+                            paragraph.Append(new Break());
+                            paragraph.Append(new Break());
+                            paragraph.Append(new Break());
+                            paragraph.Append(questionRun, answers);
+
+
+
+                            ParagraphProperties paragraphProperties = new ParagraphProperties();
+                            Justification justification = new Justification() { Val = JustificationValues.Left };
+                            paragraphProperties.Append(justification);
+                            paragraph.Append(paragraphProperties);
+
+                            cell.Append(paragraph);
+
+                        } else
+                        {
+                            var cell = tableCells[i];
+                            cell.RemoveAllChildren();
+
+                            int leftmarginInTwentiethsOfPoint = (int)(0.5 * 1440);
+                            int rightmarginInTwentiethsOfPoint = (int)(0.5 * 1440);
+
+                            TableCellMargin tableCellMargin = new TableCellMargin();
+
+                            tableCellMargin.LeftMargin = new LeftMargin() { Width = leftmarginInTwentiethsOfPoint.ToString() };
+                            tableCellMargin.RightMargin = new RightMargin() { Width = rightmarginInTwentiethsOfPoint.ToString() };
+
+                            TableCellProperties cellProperties = new TableCellProperties(tableCellMargin);
+                            cell.Append(cellProperties);
+
+
+                            Paragraph paragraph = new Paragraph();
+                            Run finalInstructionRun = new Run(new Text($"You've finished! Please return to the 27th floor kitchen" +
+                                $" and submit your envelopes to secure your placing."));
+
+                            RunProperties runProperties = new RunProperties();
+                            FontSize fontSize = new FontSize() { Val = "24" };
+                            runProperties.Append(fontSize);
+                            finalInstructionRun.RunProperties = runProperties;
+                            paragraph.Append(new Break());
+                            paragraph.Append(new Break());
+                            paragraph.Append(new Break());
+                            paragraph.Append(finalInstructionRun);
+
+
+                            ParagraphProperties paragraphProperties = new ParagraphProperties();
+                            Justification justification = new Justification() { Val = JustificationValues.Left };
+                            paragraphProperties.Append(justification);
+                            paragraph.Append(paragraphProperties);
+
+                            cell.Append(paragraph);
+
                         }
-                        
-
-                        RunProperties runProperties = new RunProperties();
-                        FontSize fontSize = new FontSize() { Val = "24" };
-                        runProperties.Append(fontSize);
-                        RunProperties runProperties2 = new RunProperties();
-                        FontSize fontSize2 = new FontSize() { Val = "24" };
-                        runProperties2.Append(fontSize2);
-
-                        questionRun.RunProperties = runProperties;
-                        answers.RunProperties = runProperties2;
-
-                        paragraph.Append(new Break());
-                        paragraph.Append(new Break());
-                        paragraph.Append(new Break());
-                        paragraph.Append(questionRun, answers);
-
-
-                        ParagraphProperties paragraphProperties = new ParagraphProperties();
-                        Justification justification = new Justification() { Val = JustificationValues.Left };
-                        paragraphProperties.Append(justification);
-                        paragraph.Append(paragraphProperties);
-
-                        cell.Append(paragraph);
+                       
 
                      }
                     mainPart.Document.Save();
