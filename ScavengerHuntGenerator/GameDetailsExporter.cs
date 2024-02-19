@@ -15,11 +15,13 @@ namespace ScavengerHuntGenerator
         private List<Game> _games;
         private string _exportFolder;
         private string _resourcePath;
-        public GameDetailsExporter(List<Game> games, string exportFolder, string resourcePath)
+        private GameDetailsRepository _repo;
+        public GameDetailsExporter(List<Game> games, string exportFolder, string resourcePath, GameDetailsRepository repo)
         {
             _games = games;
             _exportFolder = exportFolder;
-            _resourcePath = resourcePath;   
+            _resourcePath = resourcePath;
+            _repo = repo;
         }
 
         public void ExportGameLegend()
@@ -58,6 +60,21 @@ namespace ScavengerHuntGenerator
                         worksheet.Cells[row+1, col].Value = $"{correctAnswer}"; 
                     }
                 }
+
+                var correctLocations = _repo.ParseLocations();
+                var locStartCol = 15;
+                // Headers
+                worksheet.Cells[1, locStartCol].Value = "LocId";
+                worksheet.Cells[1, locStartCol+1].Value = "decodedDescription";
+                worksheet.Cells[1, locStartCol+2].Value = "clueDescription";
+
+                for (int row = 2, i =0; row < correctLocations.Count; row++, i++)
+                {
+                    worksheet.Cells[row, locStartCol].Value = $"{correctLocations[i].locId}";
+                    worksheet.Cells[row, locStartCol+1].Value = $"{correctLocations[i].decodedDescription}";
+                    worksheet.Cells[row, locStartCol+2].Value = $"{correctLocations[i].clueDescription}";
+                }
+
 
                 package.SaveAs(new FileInfo(outputFilePath));
             }

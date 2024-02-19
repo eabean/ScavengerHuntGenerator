@@ -30,7 +30,7 @@ class Program
             gamesGenerated.Add(game);   
         }
 
-        GameDetailsExporter exporter = new GameDetailsExporter(gamesGenerated, outputFolder, resourcePath);
+        GameDetailsExporter exporter = new GameDetailsExporter(gamesGenerated, outputFolder, resourcePath, gameDetailsRepository);
         exporter.ExportClues();
         exporter.ExportGameLegend();
         Console.WriteLine("Generated game");
