@@ -1,10 +1,4 @@
 ﻿using OfficeOpenXml;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using OfficeOpenXml;
 
 namespace ScavengerHuntGenerator
 {
@@ -24,14 +18,14 @@ namespace ScavengerHuntGenerator
                 ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
                 var worksheet = excelPackage.Workbook.Worksheets[0];
 
-                int rowCount = worksheet.Dimension.Rows;
-                for (int row = 2; row <= rowCount; row++)
+                int rowCount = GetLastNonEmptyRow(worksheet);
+                for (int row = ExcelIndices.StartRow; row <= rowCount; row++)
                 {
                     var q = new Question();
 
-                    q.qId = int.Parse(worksheet.Cells[row, 1].Value?.ToString());
-                    q.qText = worksheet.Cells[row, 2].Value?.ToString();
-                    var answerBlock = worksheet.Cells[row, 3].Value?.ToString();
+                    q.qId = int.Parse(worksheet.Cells[row, ExcelIndices.qIdCol].Value?.ToString());
+                    q.qText = worksheet.Cells[row, ExcelIndices.qTextCol].Value?.ToString();
+                    var answerBlock = worksheet.Cells[row, ExcelIndices.qAnswersCol].Value?.ToString();
                     q.qAnswers = ParseAnswers(answerBlock);
 
                     questions.Add(q);
@@ -83,15 +77,15 @@ namespace ScavengerHuntGenerator
 
                 var worksheet = excelPackage.Workbook.Worksheets[1];
 
-                int rowCount = worksheet.Dimension.Rows;
-                for (int row = 2; row <= rowCount; row++)
+                int rowCount = GetLastNonEmptyRow(worksheet);
+                for (int row = ExcelIndices.StartRow; row <= rowCount; row++)
                 {
 
                     var loc = new Location();
 
-                    loc.locId = worksheet.Cells[row, 1].Value?.ToString();
-                    loc.decodedDescription = worksheet.Cells[row, 2].Value?.ToString();
-                    loc.clueDescription = worksheet.Cells[row, 3].Value?.ToString();
+                    loc.locId = worksheet.Cells[row, ExcelIndices.lIdCol].Value?.ToString();
+                    loc.decodedDescription = worksheet.Cells[row, ExcelIndices.lddCol].Value?.ToString();
+                    loc.clueDescription = worksheet.Cells[row, ExcelIndices.lcdCol].Value?.ToString();
 
                     locations.Add(loc);
                 }
@@ -115,15 +109,15 @@ namespace ScavengerHuntGenerator
 
                 var worksheet = excelPackage.Workbook.Worksheets[2];
 
-                int rowCount = worksheet.Dimension.Rows;
-                for (int row = 2; row <= rowCount; row++)
+                int rowCount = GetLastNonEmptyRow(worksheet);
+                for (int row = ExcelIndices.StartRow; row <= rowCount; row++)
                 {
 
                     var loc = new Location();
 
-                    loc.locId = worksheet.Cells[row, 1].Value?.ToString();
+                    loc.locId = worksheet.Cells[row, ExcelIndices.fIdCol].Value?.ToString();
                     loc.decodedDescription = "";
-                    loc.clueDescription = worksheet.Cells[row, 2].Value?.ToString();
+                    loc.clueDescription = worksheet.Cells[row, ExcelIndices.fcdCol].Value?.ToString();
 
                     fakeLocations.Add(loc);
                 }
@@ -135,6 +129,31 @@ namespace ScavengerHuntGenerator
             }
 
             return fakeLocations;
+        }
+
+        public int GetLastNonEmptyRow(ExcelWorksheet ws)
+        {
+            int currentLastRow = ws.Dimension.End.Row;
+            while (string.IsNullOrEmpty(ws.Cells[currentLastRow, 1].Value?.ToString()))
+            {
+                currentLastRow--;
+            }
+
+            return currentLastRow;
+        }
+
+        public static class ExcelIndices
+        {
+            public const int StartRow = 2;
+            public const int qIdCol = 1;
+            public const int qTextCol = 2;
+            public const int qAnswersCol = 3;            
+            public const int lIdCol = 1;
+            public const int lddCol = 2;
+            public const int lcdCol = 3;
+            public const int fIdCol = 1;
+            public const int fcdCol = 2;
+
         }
 
     }

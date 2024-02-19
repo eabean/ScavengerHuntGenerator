@@ -63,6 +63,7 @@ namespace ScavengerHuntGenerator
         private GameDetailsRepository _detailsRepository;
         public const int NUM_OF_CLUES= 5;
         public const int NUM_OF_GAMES = 3;
+        public const int NUM_OF_ANS = 4;
         public const int MAX_GAMES = 26;
         public const int MAX_CLUES = 12;
 
@@ -98,7 +99,7 @@ namespace ScavengerHuntGenerator
             for(int i = 0;i < questions.Count;i++)
             {
                 var qAnswers = questions[i].qAnswers;
-                var fakeLocationAnswers = GetFakeLocationSet(fakeLocations, 3);
+                var fakeLocationAnswers = GetFakeLocationSet(fakeLocations, NUM_OF_ANS-1);
                 var fakeLocationIndex = 0;
                 foreach (var answer in qAnswers)
                 {
@@ -119,10 +120,10 @@ namespace ScavengerHuntGenerator
 
         public List<Location> GetFakeLocationSet(List<Location> originalList, int length)
         {
-            var randomFakeLocations = RandomizeList(originalList, 3);
+            var randomFakeLocations = RandomizeList(originalList, length);
             while (randomFakeLocations.Select(l => l.locId).Distinct().Count() != randomFakeLocations.Count)
             {
-                randomFakeLocations = RandomizeList(originalList, 3);
+                randomFakeLocations = RandomizeList(originalList, length);
             }
             return randomFakeLocations;
         }

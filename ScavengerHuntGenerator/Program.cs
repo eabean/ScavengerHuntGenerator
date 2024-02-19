@@ -14,7 +14,7 @@ class Program
 
         var resourcesFolderName = "Resources";
         var resourcesFolderPath = Path.Combine(projectDirectory, resourcesFolderName);
-        var dbPath = resourcesFolderPath + @"\ScavengerHuntDb.xlsx";
+        var dbPath = resourcesFolderPath + @"\ScavengerHuntDbShared.xlsx";
 
         var outputFolderName = "Output";
         string outputFolder = Path.Combine(projectDirectory, outputFolderName);
