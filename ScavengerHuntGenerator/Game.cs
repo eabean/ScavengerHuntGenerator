@@ -81,6 +81,9 @@ namespace ScavengerHuntGenerator
             var allFakeLocations = _detailsRepository.ParseFakeLocations();
             selectedLocations = RandomizeList(allLocations, NUM_OF_CLUES);
             selectedQuestions = RandomizeList(allQuestions, NUM_OF_CLUES);
+
+            if(allFakeLocations.Count < NUM_OF_CLUES*(NUM_OF_ANS-1)) { throw new Exception($"Not enough distinct fake locations to support {NUM_OF_CLUES} clues."); }
+
             MapAnswersToLocations(selectedLocations, selectedQuestions, allFakeLocations);
             for(int i = 0; i < NUM_OF_CLUES-1; i++)
             {
@@ -96,10 +99,13 @@ namespace ScavengerHuntGenerator
 
         public async void MapAnswersToLocations(List<Location> locations, List<Question> questions, List<Location> fakeLocations)
         {
+            var mutatingFakeLocations = fakeLocations;
             for(int i = 0;i < questions.Count;i++)
             {
                 var qAnswers = questions[i].qAnswers;
-                var fakeLocationAnswers = GetFakeLocationSet(fakeLocations, NUM_OF_ANS-1);
+                var fakeLocationAnswers = GetFakeLocationSet(mutatingFakeLocations, NUM_OF_ANS - 1);
+                mutatingFakeLocations = mutatingFakeLocations.Where(l1 => !fakeLocationAnswers.Any(l2 => l2.locId == l1.locId)).ToList();
+
                 var fakeLocationIndex = 0;
                 foreach (var answer in qAnswers)
                 {
@@ -108,6 +114,7 @@ namespace ScavengerHuntGenerator
                     if (answer.isCorrect) 
                     {
                        questionMapping.Add(answer.anText, correctLocation);
+
                     } else
                     {
                         questionMapping.Add(answer.anText, fakeLocationAnswers[fakeLocationIndex].clueDescription);
