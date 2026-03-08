@@ -1,6 +1,4 @@
-﻿using DocumentFormat.OpenXml.Wordprocessing;
-using ScavengerHuntGenerator;
-using System;
+﻿using ScavengerHuntGenerator;
 
 
 class Program
@@ -27,14 +25,14 @@ class Program
         {
             var game = new Game(gameIds[i], gameDetailsRepository);
             game.GenerateGame();
-            gamesGenerated.Add(game);   
+            gamesGenerated.Add(game);
         }
 
         GameDetailsExporter exporter = new GameDetailsExporter(gamesGenerated, outputFolder, resourcePath, gameDetailsRepository);
         exporter.ExportClues();
         exporter.ExportGameLegend();
         Console.WriteLine("Generated game");
-       
+
 
     }
 }

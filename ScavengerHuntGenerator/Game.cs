@@ -13,11 +13,6 @@ namespace ScavengerHuntGenerator
         public string decodedDescription;
         public string clueDescription;
 
-        public Location()
-        {
-            
-        }
-
     }
 
     public class Answer
