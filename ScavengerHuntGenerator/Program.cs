@@ -5,7 +5,6 @@ using ScavengerHuntGenerator;
 
 class Program
 {
-
     static void Main(string[] args)
     {
         ExcelPackage.License.SetNonCommercialPersonal("ScavengerHuntGenerator");
