@@ -1,4 +1,4 @@
-﻿namespace ScavengerHuntGenerator
+namespace ScavengerHuntGenerator
 {
     public class Game
     {
@@ -7,8 +7,8 @@
         public List<Location> selectedLocations;
         public List<Question> selectedQuestions;
 
-        private GameDetailsRepository _detailsRepository;
-        private GameSettings _settings;
+        private readonly GameDetailsRepository _detailsRepository;
+        private readonly GameSettings _settings;
 
         public Game(string gameId, GameDetailsRepository detailsRepository, GameSettings settings)
         {
@@ -22,69 +22,57 @@
             var allLocations = _detailsRepository.ParseLocations();
             var allQuestions = _detailsRepository.ParseQuestions();
             var allFakeLocations = _detailsRepository.ParseFakeLocations();
+
+            int fakeLocationsRequired = _settings.NumOfClues * (_settings.NumOfAnswers - 1);
+            if (allFakeLocations.Count < fakeLocationsRequired)
+                throw new Exception($"Not enough distinct fake locations to support {_settings.NumOfClues} clues. You need (number of clues) * (number of answers per clue-1) fake locations.");
+
             selectedLocations = RandomizeList(allLocations, _settings.NumOfClues);
             selectedQuestions = RandomizeList(allQuestions, _settings.NumOfClues);
 
-            if(allFakeLocations.Count < _settings.NumOfClues*(_settings.NumOfAnswers-1)) { throw new Exception($"Not enough distinct fake locations to support {_settings.NumOfClues} clues."); }
-
             MapAnswersToLocations(selectedLocations, selectedQuestions, allFakeLocations);
-            for(int i = 0; i < _settings.NumOfClues-1; i++)
-            {
-                var c = new Clue();
-                c.location = selectedLocations[i];
-                c.question = selectedQuestions[i];
-                clueList.Add(c);
-                Console.WriteLine($"Clue {i}: Location: {c.location.locId.ToString()}, {c.location.decodedDescription.ToString()}" +
-                    $" Question:  {c.question.qId}, {c.question.qText.ToString()}, {c.question.answersLocationMapping.ToString()}");
-            }
 
+            for (int i = 0; i < _settings.NumOfClues - 1; i++)
+            {
+                var clue = new Clue { location = selectedLocations[i], question = selectedQuestions[i] };
+                clueList.Add(clue);
+                Console.WriteLine($"Clue {i}: Location: {clue.location.locId}, {clue.location.decodedDescription}" +
+                    $" Question: {clue.question.qId}, {clue.question.qText}");
+            }
         }
 
-        public async void MapAnswersToLocations(List<Location> locations, List<Question> questions, List<Location> fakeLocations)
+        private void MapAnswersToLocations(List<Location> locations, List<Question> questions, List<Location> fakeLocations)
         {
-            var mutatingFakeLocations = fakeLocations;
-            for(int i = 0;i < questions.Count;i++)
+            var remainingFakeLocations = fakeLocations;
+            for (int i = 0; i < questions.Count; i++)
             {
-                var qAnswers = questions[i].qAnswers;
-                var fakeLocationAnswers = GetFakeLocationSet(mutatingFakeLocations, _settings.NumOfAnswers - 1);
-                mutatingFakeLocations = mutatingFakeLocations.Where(l1 => !fakeLocationAnswers.Any(l2 => l2.locId == l1.locId)).ToList();
+                var fakeLocationSet = GetFakeLocationSet(remainingFakeLocations, _settings.NumOfAnswers - 1);
+                remainingFakeLocations = remainingFakeLocations.Where(l => !fakeLocationSet.Any(f => f.locId == l.locId)).ToList();
 
-                var fakeLocationIndex = 0;
-                foreach (var answer in qAnswers)
+                var mapping = questions[i].answersLocationMapping;
+                var correctClueDescription = locations[i].clueDescription;
+                var fakeIndex = 0;
+
+                foreach (var answer in questions[i].qAnswers)
                 {
-                    var questionMapping = questions[i].answersLocationMapping;
-                    var correctLocation = locations[i].clueDescription;
-                    if (answer.isCorrect) 
-                    {
-                       questionMapping.Add(answer.anText, correctLocation);
-
-                    } else
-                    {
-                        questionMapping.Add(answer.anText, fakeLocationAnswers[fakeLocationIndex].clueDescription);
-                        fakeLocationIndex++;
-                    }
+                    mapping.Add(answer.anText, answer.isCorrect
+                        ? correctClueDescription
+                        : fakeLocationSet[fakeIndex++].clueDescription);
                 }
-
             }
         }
 
-        public List<Location> GetFakeLocationSet(List<Location> originalList, int length)
+        private List<Location> GetFakeLocationSet(List<Location> locations, int count)
         {
-            var randomFakeLocations = RandomizeList(originalList, length);
-            while (randomFakeLocations.Select(l => l.locId).Distinct().Count() != randomFakeLocations.Count)
-            {
-                randomFakeLocations = RandomizeList(originalList, length);
-            }
-            return randomFakeLocations;
+            List<Location> result;
+            do { result = RandomizeList(locations, count); }
+            while (result.Select(l => l.locId).Distinct().Count() != count);
+            return result;
         }
 
-        public List<T> RandomizeList<T>(List<T> originalList, int length)
+        private List<T> RandomizeList<T>(List<T> list, int count)
         {
-            var rand = new Random();
-            var shuffledList = originalList.OrderBy(x => rand.Next()).ToList();
-            List<T> selectedItems = shuffledList.Take(length).ToList();
-
-            return selectedItems;
+            return list.OrderBy(_ => Random.Shared.Next()).Take(count).ToList();
         }
     }
 }
