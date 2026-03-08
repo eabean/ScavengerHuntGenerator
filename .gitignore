@@ -3,3 +3,9 @@
 ################################################################################
 
 /.vs
+ScavengerHuntGenerator/bin/
+ScavengerHuntGenerator/obj/
+ScavengerHuntGenerator/Output
+ScavengerHuntGenerator/Resources
+ScavengerHuntGenerator/Directory.Build.Props
+ScavengerHuntGenerator/.claude

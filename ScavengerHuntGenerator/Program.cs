@@ -11,7 +11,7 @@ class Program
         ExcelPackage.License.SetNonCommercialPersonal("ScavengerHuntGenerator");
 
         var configuration = new ConfigurationBuilder()
-            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
             .Build();
 
         var settings = configuration.GetSection("GameSettings").Get<GameSettings>()

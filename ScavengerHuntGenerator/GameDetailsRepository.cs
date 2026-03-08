@@ -7,6 +7,8 @@ namespace ScavengerHuntGenerator
         private string _pathToExcel;
         public GameDetailsRepository(string pathToExcel)
         {
+            if (!File.Exists(pathToExcel))
+                throw new FileNotFoundException($"Database file not found: {pathToExcel}");
             _pathToExcel = pathToExcel;
         }
 
