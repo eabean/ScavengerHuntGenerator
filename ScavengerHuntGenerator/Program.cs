@@ -9,7 +9,6 @@ class Program
     static void Main(string[] args)
     {
         ExcelPackage.License.SetNonCommercialPersonal("ScavengerHuntGenerator");
-
         var configuration = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
             .Build();
@@ -24,12 +23,12 @@ class Program
 
         var gameIds = Enumerable.Range('A', 26).Select(x => ((char)x).ToString()).ToList();
 
-        var resourcesFolderPath = Path.Combine(projectDirectory, settings.ResourcesFolderName);
-        var dbPath = Path.Combine(resourcesFolderPath, settings.DatabaseFileName);
-        string outputFolder = Path.Combine(projectDirectory, settings.OutputFolderName);
-        string resourcePath = Path.Combine(resourcesFolderPath, settings.ClueTemplateFileName);
+        var resourcesFolder = Path.Combine(projectDirectory, settings.ResourcesFolderName);
+        var outputFolder = Path.Combine(projectDirectory, settings.OutputFolderName);
+        var questionsDbPath = Path.Combine(resourcesFolder, settings.QuestionsDatabaseFileName);
+        var clueTemplatePath = Path.Combine(resourcesFolder, settings.ClueTemplateFileName);
 
-        GameDetailsRepository gameDetailsRepository = new GameDetailsRepository(dbPath);
+        GameDetailsRepository gameDetailsRepository = new GameDetailsRepository(questionsDbPath);
 
         List<Game> gamesGenerated = new List<Game>();
         for (int i = 0; i < settings.NumOfGames; i++)
@@ -39,11 +38,9 @@ class Program
             gamesGenerated.Add(game);
         }
 
-        GameDetailsExporter exporter = new GameDetailsExporter(gamesGenerated, outputFolder, resourcePath, gameDetailsRepository, settings);
+        GameDetailsExporter exporter = new GameDetailsExporter(gamesGenerated, outputFolder, clueTemplatePath, gameDetailsRepository, settings);
         exporter.ExportClues();
         exporter.ExportGameLegend();
-        Console.WriteLine("Generated game");
-
-
+        Console.WriteLine($"Generated game in {projectDirectory}");
     }
 }

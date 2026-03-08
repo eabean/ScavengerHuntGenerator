@@ -1,10 +1,11 @@
-﻿using OfficeOpenXml;
+using OfficeOpenXml;
 
 namespace ScavengerHuntGenerator
 {
     public class GameDetailsRepository
     {
-        private string _pathToExcel;
+        private readonly string _pathToExcel;
+
         public GameDetailsRepository(string pathToExcel)
         {
             if (!File.Exists(pathToExcel))
@@ -15,145 +16,113 @@ namespace ScavengerHuntGenerator
         public List<Question> ParseQuestions()
         {
             var questions = new List<Question>();
-            using (var excelPackage = new ExcelPackage(new FileInfo(_pathToExcel)))
-            {
-                var worksheet = excelPackage.Workbook.Worksheets[0];
+            using var package = new ExcelPackage(new FileInfo(_pathToExcel));
+            var ws = package.Workbook.Worksheets[SheetIndex.Questions];
+            int rowCount = GetLastNonEmptyRow(ws);
 
-                int rowCount = GetLastNonEmptyRow(worksheet);
-                for (int row = ExcelIndices.StartRow; row <= rowCount; row++)
+            for (int row = Col.StartRow; row <= rowCount; row++)
+            {
+                questions.Add(new Question
                 {
-                    var q = new Question();
-
-                    q.qId = int.Parse(worksheet.Cells[row, ExcelIndices.qIdCol].Value?.ToString());
-                    q.qText = worksheet.Cells[row, ExcelIndices.qTextCol].Value?.ToString();
-                    var answerBlock = worksheet.Cells[row, ExcelIndices.qAnswersCol].Value?.ToString();
-                    q.qAnswers = ParseAnswers(answerBlock);
-
-                    questions.Add(q);
-                }
+                    qId = int.Parse(ws.Cells[row, Col.QId].Value?.ToString()),
+                    qText = ws.Cells[row, Col.QText].Value?.ToString(),
+                    qAnswers = ParseAnswers(ws.Cells[row, Col.QAnswers].Value?.ToString())
+                });
             }
 
-            foreach (var question in questions)
-            {
-                Console.WriteLine($"Id: {question.qId}, Text: {question.qText}, Answer: [{string.Join(", ", question.qAnswers)}]");
-            }
+            foreach (var q in questions)
+                Console.WriteLine($"Id: {q.qId}, Text: {q.qText}, Answers: [{string.Join(", ", q.qAnswers)}]");
 
             return questions;
         }
 
         public List<Answer> ParseAnswers(string answerBlock)
         {
-            var answers = new List<Answer>();
-            if (!string.IsNullOrEmpty(answerBlock))
-            {
-                var answerArray = answerBlock.Split(new[] { "\n", "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
-                foreach (var answerItem in answerArray)
+            if (string.IsNullOrEmpty(answerBlock))
+                throw new Exception("Answers are empty for a question");
+
+            return answerBlock
+                .Split(new[] { "\n", "\r\n" }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(item => new Answer
                 {
-                    var a = new Answer();
-                    if(answerItem.Contains("*"))
-                    {
-                        a.anText = answerItem.TrimEnd('*');
-                        a.isCorrect = true;
-                    } else
-                    {
-                        a.anText = answerItem; 
-                        a.isCorrect = false;
-                    }
-                    answers.Add(a);
-                }
-            } else
-            {
-                throw new Exception("answers are empty for a question");
-            }
-            return answers;
+                    isCorrect = item.Contains('*'),
+                    anText = item.TrimEnd('*')
+                })
+                .ToList();
         }
 
         public List<Location> ParseLocations()
         {
-
             var locations = new List<Location>();
-            using (var excelPackage = new ExcelPackage(new FileInfo(_pathToExcel)))
+            using var package = new ExcelPackage(new FileInfo(_pathToExcel));
+            var ws = package.Workbook.Worksheets[SheetIndex.Locations];
+            int rowCount = GetLastNonEmptyRow(ws);
+
+            for (int row = Col.StartRow; row <= rowCount; row++)
             {
-
-                var worksheet = excelPackage.Workbook.Worksheets[1];
-
-                int rowCount = GetLastNonEmptyRow(worksheet);
-                for (int row = ExcelIndices.StartRow; row <= rowCount; row++)
+                locations.Add(new Location
                 {
-
-                    var loc = new Location();
-
-                    loc.locId = worksheet.Cells[row, ExcelIndices.lIdCol].Value?.ToString();
-                    loc.decodedDescription = worksheet.Cells[row, ExcelIndices.lddCol].Value?.ToString();
-                    loc.clueDescription = worksheet.Cells[row, ExcelIndices.lcdCol].Value?.ToString();
-
-                    locations.Add(loc);
-                }
+                    locId = ws.Cells[row, Col.LId].Value?.ToString(),
+                    decodedDescription = ws.Cells[row, Col.LDecodedDescription].Value?.ToString(),
+                    clueDescription = ws.Cells[row, Col.LClueDescription].Value?.ToString()
+                });
             }
 
             foreach (var loc in locations)
-            {
                 Console.WriteLine($"Id: {loc.locId}, decodedDescription: {loc.decodedDescription}, clueDescription: {loc.clueDescription}");
-            }
 
             return locations;
         }
 
         public List<Location> ParseFakeLocations()
         {
-
             var fakeLocations = new List<Location>();
-            using (var excelPackage = new ExcelPackage(new FileInfo(_pathToExcel)))
+            using var package = new ExcelPackage(new FileInfo(_pathToExcel));
+            var ws = package.Workbook.Worksheets[SheetIndex.FakeLocations];
+            int rowCount = GetLastNonEmptyRow(ws);
+
+            for (int row = Col.StartRow; row <= rowCount; row++)
             {
-
-                var worksheet = excelPackage.Workbook.Worksheets[2];
-
-                int rowCount = GetLastNonEmptyRow(worksheet);
-                for (int row = ExcelIndices.StartRow; row <= rowCount; row++)
+                fakeLocations.Add(new Location
                 {
-
-                    var loc = new Location();
-
-                    loc.locId = worksheet.Cells[row, ExcelIndices.fIdCol].Value?.ToString();
-                    loc.decodedDescription = "";
-                    loc.clueDescription = worksheet.Cells[row, ExcelIndices.fcdCol].Value?.ToString();
-
-                    fakeLocations.Add(loc);
-                }
+                    locId = ws.Cells[row, Col.FId].Value?.ToString(),
+                    decodedDescription = "",
+                    clueDescription = ws.Cells[row, Col.FClueDescription].Value?.ToString()
+                });
             }
 
             foreach (var loc in fakeLocations)
-            {
                 Console.WriteLine($"Id: {loc.locId}, clueDescription: {loc.clueDescription}");
-            }
 
             return fakeLocations;
         }
 
-        public int GetLastNonEmptyRow(ExcelWorksheet ws)
+        private int GetLastNonEmptyRow(ExcelWorksheet ws)
         {
-            int currentLastRow = ws.Dimension.End.Row;
-            while (string.IsNullOrEmpty(ws.Cells[currentLastRow, 1].Value?.ToString()))
-            {
-                currentLastRow--;
-            }
-
-            return currentLastRow;
+            int row = ws.Dimension.End.Row;
+            while (string.IsNullOrEmpty(ws.Cells[row, 1].Value?.ToString()))
+                row--;
+            return row;
         }
 
-        public static class ExcelIndices
+        private static class SheetIndex
+        {
+            public const int Questions = 0;
+            public const int Locations = 1;
+            public const int FakeLocations = 2;
+        }
+
+        private static class Col
         {
             public const int StartRow = 2;
-            public const int qIdCol = 1;
-            public const int qTextCol = 2;
-            public const int qAnswersCol = 3;            
-            public const int lIdCol = 1;
-            public const int lddCol = 2;
-            public const int lcdCol = 3;
-            public const int fIdCol = 1;
-            public const int fcdCol = 2;
-
+            public const int QId = 1;
+            public const int QText = 2;
+            public const int QAnswers = 3;
+            public const int LId = 1;
+            public const int LDecodedDescription = 2;
+            public const int LClueDescription = 3;
+            public const int FId = 1;
+            public const int FClueDescription = 2;
         }
-
     }
 }

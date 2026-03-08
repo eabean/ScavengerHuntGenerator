@@ -10,7 +10,7 @@ namespace ScavengerHuntGenerator
         public string? ProjectDirectory { get; set; }
         public string ResourcesFolderName { get; set; } = "Resources";
         public string OutputFolderName { get; set; } = "Output";
-        public string DatabaseFileName { get; set; } = "ScavengerHuntDbShared.xlsx";
+        public string QuestionsDatabaseFileName { get; set; } = "ScavengerHuntDbShared.xlsx";
         public string ClueTemplateFileName { get; set; } = "Clues2x2.docx";
         public string FinalInstruction { get; set; } = "You've finished! Please return to the 27th floor kitchen and submit your envelopes to secure your placing.";
     }
