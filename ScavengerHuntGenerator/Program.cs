@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Configuration;
+using OfficeOpenXml;
 using ScavengerHuntGenerator;
 
 
@@ -7,6 +8,8 @@ class Program
 
     static void Main(string[] args)
     {
+        ExcelPackage.License.SetNonCommercialPersonal("ScavengerHuntGenerator");
+
         var configuration = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
             .Build();

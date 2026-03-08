@@ -96,6 +96,7 @@ namespace ScavengerHuntGenerator
 
         public void ExportClues()
         {
+            Directory.CreateDirectory(_exportFolder);
             foreach (var game in _games)
             {
                 var outputFileName = $"Game{game.gameId}.docx";

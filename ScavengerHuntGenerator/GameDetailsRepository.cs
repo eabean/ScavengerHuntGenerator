@@ -15,7 +15,6 @@ namespace ScavengerHuntGenerator
             var questions = new List<Question>();
             using (var excelPackage = new ExcelPackage(new FileInfo(_pathToExcel)))
             {
-                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
                 var worksheet = excelPackage.Workbook.Worksheets[0];
 
                 int rowCount = GetLastNonEmptyRow(worksheet);
@@ -71,7 +70,6 @@ namespace ScavengerHuntGenerator
         {
 
             var locations = new List<Location>();
-            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
             using (var excelPackage = new ExcelPackage(new FileInfo(_pathToExcel)))
             {
 
@@ -103,7 +101,6 @@ namespace ScavengerHuntGenerator
         {
 
             var fakeLocations = new List<Location>();
-            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
             using (var excelPackage = new ExcelPackage(new FileInfo(_pathToExcel)))
             {
 
