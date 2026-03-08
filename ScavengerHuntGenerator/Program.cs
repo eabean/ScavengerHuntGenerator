@@ -1,4 +1,5 @@
-﻿using ScavengerHuntGenerator;
+using Microsoft.Extensions.Configuration;
+using ScavengerHuntGenerator;
 
 
 class Program
@@ -6,29 +7,36 @@ class Program
 
     static void Main(string[] args)
     {
+        var configuration = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
+            .Build();
+
+        var settings = configuration.GetSection("GameSettings").Get<GameSettings>()
+            ?? throw new Exception("GameSettings section missing from appsettings.json");
+
         var executableDirectory = AppDomain.CurrentDomain.BaseDirectory;
-        var projectDirectory = Directory.GetParent(executableDirectory)?.FullName;
+        var projectDirectory = settings.ProjectDirectory
+            ?? Directory.GetParent(executableDirectory)?.FullName
+            ?? throw new Exception("Could not determine project directory.");
+
         var gameIds = Enumerable.Range('A', 26).Select(x => ((char)x).ToString()).ToList();
 
-        var resourcesFolderName = "Resources";
-        var resourcesFolderPath = Path.Combine(projectDirectory, resourcesFolderName);
-        var dbPath = resourcesFolderPath + @"\ScavengerHuntDbShared.xlsx";
-
-        var outputFolderName = "Output";
-        string outputFolder = Path.Combine(projectDirectory, outputFolderName);
-        string resourcePath = resourcesFolderPath + @"\Clues2x2.docx";
+        var resourcesFolderPath = Path.Combine(projectDirectory, settings.ResourcesFolderName);
+        var dbPath = Path.Combine(resourcesFolderPath, settings.DatabaseFileName);
+        string outputFolder = Path.Combine(projectDirectory, settings.OutputFolderName);
+        string resourcePath = Path.Combine(resourcesFolderPath, settings.ClueTemplateFileName);
 
         GameDetailsRepository gameDetailsRepository = new GameDetailsRepository(dbPath);
 
         List<Game> gamesGenerated = new List<Game>();
-        for (int i = 0; i < Game.NUM_OF_GAMES; i++)
+        for (int i = 0; i < settings.NumOfGames; i++)
         {
-            var game = new Game(gameIds[i], gameDetailsRepository);
+            var game = new Game(gameIds[i], gameDetailsRepository, settings);
             game.GenerateGame();
             gamesGenerated.Add(game);
         }
 
-        GameDetailsExporter exporter = new GameDetailsExporter(gamesGenerated, outputFolder, resourcePath, gameDetailsRepository);
+        GameDetailsExporter exporter = new GameDetailsExporter(gamesGenerated, outputFolder, resourcePath, gameDetailsRepository, settings);
         exporter.ExportClues();
         exporter.ExportGameLegend();
         Console.WriteLine("Generated game");

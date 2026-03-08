@@ -16,12 +16,14 @@ namespace ScavengerHuntGenerator
         private string _exportFolder;
         private string _resourcePath;
         private GameDetailsRepository _repo;
-        public GameDetailsExporter(List<Game> games, string exportFolder, string resourcePath, GameDetailsRepository repo)
+        private GameSettings _settings;
+        public GameDetailsExporter(List<Game> games, string exportFolder, string resourcePath, GameDetailsRepository repo, GameSettings settings)
         {
             _games = games;
             _exportFolder = exportFolder;
             _resourcePath = resourcePath;
             _repo = repo;
+            _settings = settings;
         }
 
         public void ExportGameLegend()
@@ -35,7 +37,7 @@ namespace ScavengerHuntGenerator
                 ExcelWorksheet worksheet = package.Workbook.Worksheets.Add("Legend");
                 int startRow = 2;
                 // Clues
-                for (int i = startRow;i <= Game.NUM_OF_CLUES +startRow; i++)
+                for (int i = startRow;i <= _settings.NumOfClues + startRow; i++)
                 {
                     worksheet.Cells[1, i].Value = $"C{i-1}";                  
                 }
@@ -52,7 +54,7 @@ namespace ScavengerHuntGenerator
                 for (int row = startRow, gIndex =0; row < (_games.Count) * 2; row +=2, gIndex++)
                 {
                     var currentGame = _games[gIndex];
-                    for (int col = 2, g = 0; col < Game.NUM_OF_CLUES + startRow; col++, g++)
+                    for (int col = 2, g = 0; col < _settings.NumOfClues + startRow; col++, g++)
                     {
                         var correctLocation = currentGame.selectedLocations[g];
                         var correctAnswer = ParseCorrectAnswer(currentGame.selectedQuestions, g);
@@ -106,7 +108,7 @@ namespace ScavengerHuntGenerator
                     Table table = mainPart.Document.Body.Descendants<Table>().FirstOrDefault();
                     var tableCells = table.Descendants<TableCell>().ToArray();
 
-                    if (tableCells.Length <= Game.NUM_OF_CLUES) throw new Exception("Not enough table cells to print out all clues and final instruction.");
+                    if (tableCells.Length <= _settings.NumOfClues) throw new Exception("Not enough table cells to print out all clues and final instruction.");
 
                     var questions = game.selectedQuestions;
 
@@ -187,8 +189,7 @@ namespace ScavengerHuntGenerator
 
 
                             Paragraph paragraph = new Paragraph();
-                            Run finalInstructionRun = new Run(new Text($"You've finished! Please return to the 27th floor kitchen" +
-                                $" and submit your envelopes to secure your placing."));
+                            Run finalInstructionRun = new Run(new Text(_settings.FinalInstruction));
 
                             RunProperties runProperties = new RunProperties();
                             FontSize fontSize = new FontSize() { Val = "24" };

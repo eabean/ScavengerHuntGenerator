@@ -56,17 +56,13 @@ namespace ScavengerHuntGenerator
         public List<Question> selectedQuestions;
 
         private GameDetailsRepository _detailsRepository;
-        public const int NUM_OF_CLUES= 10;
-        public const int NUM_OF_GAMES = 8;
-        public const int NUM_OF_ANS = 4;
-        public const int MAX_GAMES = 26;
-        public const int MAX_CLUES = 12;
+        private GameSettings _settings;
 
-
-        public Game(string gameId, GameDetailsRepository detailsRepository)
+        public Game(string gameId, GameDetailsRepository detailsRepository, GameSettings settings)
         {
             this.gameId = gameId;
             _detailsRepository = detailsRepository;
+            _settings = settings;
         }
 
         public void GenerateGame()
@@ -74,13 +70,13 @@ namespace ScavengerHuntGenerator
             var allLocations = _detailsRepository.ParseLocations();
             var allQuestions = _detailsRepository.ParseQuestions();
             var allFakeLocations = _detailsRepository.ParseFakeLocations();
-            selectedLocations = RandomizeList(allLocations, NUM_OF_CLUES);
-            selectedQuestions = RandomizeList(allQuestions, NUM_OF_CLUES);
+            selectedLocations = RandomizeList(allLocations, _settings.NumOfClues);
+            selectedQuestions = RandomizeList(allQuestions, _settings.NumOfClues);
 
-            if(allFakeLocations.Count < NUM_OF_CLUES*(NUM_OF_ANS-1)) { throw new Exception($"Not enough distinct fake locations to support {NUM_OF_CLUES} clues."); }
+            if(allFakeLocations.Count < _settings.NumOfClues*(_settings.NumOfAnswers-1)) { throw new Exception($"Not enough distinct fake locations to support {_settings.NumOfClues} clues."); }
 
             MapAnswersToLocations(selectedLocations, selectedQuestions, allFakeLocations);
-            for(int i = 0; i < NUM_OF_CLUES-1; i++)
+            for(int i = 0; i < _settings.NumOfClues-1; i++)
             {
                 var c = new Clue();
                 c.location = selectedLocations[i];
@@ -98,7 +94,7 @@ namespace ScavengerHuntGenerator
             for(int i = 0;i < questions.Count;i++)
             {
                 var qAnswers = questions[i].qAnswers;
-                var fakeLocationAnswers = GetFakeLocationSet(mutatingFakeLocations, NUM_OF_ANS - 1);
+                var fakeLocationAnswers = GetFakeLocationSet(mutatingFakeLocations, _settings.NumOfAnswers - 1);
                 mutatingFakeLocations = mutatingFakeLocations.Where(l1 => !fakeLocationAnswers.Any(l2 => l2.locId == l1.locId)).ToList();
 
                 var fakeLocationIndex = 0;
